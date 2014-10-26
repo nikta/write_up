@@ -13,17 +13,16 @@ nums <- sapply(trainData, is.numeric)
 trainData1 <- trainData[ , nums]
 testData1 <- testData[,nums]
 
-#since we have so many fetaures, it would be best to reduce the dimensionality of the data, by selecting 
-#the componnets that remove 90% of teh variance from the data.
-pp <- preProcess (trainData1, method =  "pca", thresh=0.9)
-training <- predict(pp, trainData1)
-testing <- predict(pp, testData1)
+training <- trainData1
+testing <- testData1
 training$classe <- as.factor(trainData$classe)
 
 ###### We use density plots and feature plot to select the right features. Since there are so many features we use the feature plot and select a subset of columns each time, and example is shown below.Columns 2,33,34,35,47,48 do not present much information as the density plot is centered around one single value
 qplot(training[,2], data=training, geom="density" )
 featurePlot(x=training[,c(1:5)], y=training$classe,plot="pairs")
-featurePlot(x=training[,c(5:10)], y=training$classe,plot="pairs")
+##featurePlot(x=training[,c(5:10)], y=training$classe,plot="pairs")
+training <- training[,c(-2,-33,-34,-35,-47,-48)]
+testing <- testing[,c(-2,-33,-34,-35,-47,-48)]
 
 ##We ispect in there are any columns with zero variance in the data. There is non.
 
@@ -38,10 +37,12 @@ fitControl <- trainControl(## 10-fold CV,
   repeats = 10)
 
 ## we use random forests or decision tree to model the data
-modFit <- train(classe ~., data= training[,c(-2,-33,-34,-35,-47,-48)], method="rf", trControl = fitControl)
+library(doMC)
+registerDoMC(cores = 24)
+modFit <- train(classe ~., data= training, method="rf", preProcess="pca", trControl = fitControl)
+#modFit <- train(classe ~., data= training, method="rf", trControl = fitControl)
 
-
-result <- predict(modFit, testing[,c(-2,-33,-34,-35,-47,-48)])
+result <- predict(modFit, testing)
 
 ####To uncerstand the accuracy of the model. We can also detemine the accuracy by sing miss-classification function.
 confusionMatrix(predict(modFit, training), training$classe)
