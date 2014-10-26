@@ -15,7 +15,7 @@ testData1 <- testData[,nums]
 
 #since we have so many fetaures, it would be best to reduce the dimensionality of the data, by selecting 
 #the componnets that remove 90% of teh variance from the data.
-pp <- preProcess (trainData1, method = c("center","scale", "pca"), thresh=0.9)
+pp <- preProcess (trainData1, method =  "pca", thresh=0.9)
 training <- predict(pp, trainData1)
 testing <- predict(pp, testData1)
 training$classe <- as.factor(trainData$classe)
@@ -38,8 +38,8 @@ fitControl <- trainControl(## 10-fold CV,
   repeats = 10)
 
 ## we use random forests or decision tree to model the data
-modFit <- train(classe ~., data= training[,c(-2,-33,-34,-35,-47,-48)], method="rpart", trControl = fitControl)
-#modFit <- train(classe ~., data= training[,c(-2,-33,-34,-35,-47,-48)], method="rf", trControl = fitControl)
+modFit <- train(classe ~., data= training[,c(-2,-33,-34,-35,-47,-48)], method="rf", trControl = fitControl)
+
 
 result <- predict(modFit, testing[,c(-2,-33,-34,-35,-47,-48)])
 
